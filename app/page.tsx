@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import LogoutButton from '@/components/LogoutButton'
+import TaskItem from '@/components/TaskItem'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -19,8 +20,11 @@ export default async function Home() {
     .eq('user_id', userData.user.id)
     .order('date', { ascending: true })
 
-  const todayTasks = tasks?.filter((t) => t.date === today) || []
-  const upcomingTasks = tasks?.filter((t) => t.date > today) || []
+  const pendingTasks = tasks?.filter((t) => t.status === 'pending') || []
+  const completedTasks = tasks?.filter((t) => t.status === 'completed') || []
+
+  const todayTasks = pendingTasks.filter((t) => t.date === today)
+  const upcomingTasks = pendingTasks.filter((t) => t.date > today)
 
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
@@ -48,12 +52,9 @@ export default async function Home() {
       {todayTasks.length === 0 ? (
         <p style={{ color: '#888' }}>Nothing due today.</p>
       ) : (
-        <ul>
+        <ul style={{ padding: 0 }}>
           {todayTasks.map((task) => (
-            <li key={task.id} style={{ marginBottom: '0.5rem' }}>
-              <strong>{task.title}</strong> — {task.category}
-              {task.time ? ` at ${task.time}` : ''}
-            </li>
+            <TaskItem key={task.id} task={task} />
           ))}
         </ul>
       )}
@@ -62,11 +63,21 @@ export default async function Home() {
       {upcomingTasks.length === 0 ? (
         <p style={{ color: '#888' }}>Nothing upcoming.</p>
       ) : (
-        <ul>
+        <ul style={{ padding: 0 }}>
           {upcomingTasks.map((task) => (
-            <li key={task.id} style={{ marginBottom: '0.5rem' }}>
-              <strong>{task.title}</strong> — {task.category} — {task.date}
-              {task.time ? ` at ${task.time}` : ''}
+            <TaskItem key={task.id} task={task} />
+          ))}
+        </ul>
+      )}
+
+      <h2>Completed</h2>
+      {completedTasks.length === 0 ? (
+        <p style={{ color: '#888' }}>No completed tasks yet.</p>
+      ) : (
+        <ul style={{ padding: 0 }}>
+          {completedTasks.map((task) => (
+            <li key={task.id} style={{ marginBottom: '0.5rem', listStyle: 'none', color: '#888', textDecoration: 'line-through' }}>
+              {task.title} — {task.category} — {task.date}
             </li>
           ))}
         </ul>
