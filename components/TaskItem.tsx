@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
@@ -32,6 +33,9 @@ export default function TaskItem({ task }: { task: Task }) {
       <strong>{task.title}</strong> — {task.category}
       {task.time ? ` at ${task.time}` : ''}
       {' '}
+      <Link href={`/tasks/${task.id}/edit`} style={{ marginLeft: '0.5rem' }}>
+        Edit
+      </Link>
       <button onClick={handleComplete} style={{ marginLeft: '0.5rem', padding: '0.2rem 0.5rem' }}>
         Complete
       </button>
