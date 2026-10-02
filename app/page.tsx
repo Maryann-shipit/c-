@@ -1,127 +1,63 @@
 import Link from 'next/link'
-import LogoutButton from '@/components/LogoutButton'
-import TaskItem from '@/components/TaskItem'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
-function daysBetween(dateStr: string, todayStr: string): number {
-  const date = new Date(dateStr + 'T00:00:00')
-  const today = new Date(todayStr + 'T00:00:00')
-  return Math.round((date.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-}
-
-export default async function Home() {
+export default async function LandingPage() {
   const supabase = await createClient()
   const { data: userData } = await supabase.auth.getUser()
 
-  if (!userData.user) {
-    redirect('/login')
+  if (userData.user) {
+    redirect('/dashboard')
   }
 
-  const today = new Date().toISOString().split('T')[0]
-
-  const { data: tasks, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', userData.user.id)
-    .order('date', { ascending: true })
-
-  const pendingTasks = tasks?.filter((t) => t.status === 'pending') || []
-  const completedTasks = tasks?.filter((t) => t.status === 'completed') || []
-
-  const todayTasks = pendingTasks.filter((t) => t.date === today)
-  const upcomingTasks = pendingTasks.filter((t) => t.date > today)
-
-  const earlyReminderTasks = pendingTasks.filter((t) => {
-    if (t.date <= today || !t.early_reminder) return false
-    const daysUntil = daysBetween(t.date, today)
-    if (t.early_reminder === '2_days') return daysUntil <= 2
-    if (t.early_reminder === '3_days') return daysUntil <= 3
-    return false
-  })
-
-  const hasReminders = todayTasks.length > 0 || earlyReminderTasks.length > 0
-
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-      <LogoutButton />
-      <h1>Your Life-Admin Assistant</h1>
-      <Link
-        href="/tasks/new"
-        style={{
-          display: 'inline-block',
-          marginTop: '1rem',
-          marginBottom: '2rem',
-          padding: '0.5rem 1rem',
-          background: '#0070f3',
-          color: 'white',
-          borderRadius: '4px',
-          textDecoration: 'none',
-        }}
-      >
-        + New Task
-      </Link>
+    <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+      <h1 className="text-4xl font-bold mb-3">Welcome to Mawin</h1>
+      <p className="text-lg text-gray-300 mb-2">
+        A place where nothing important slips through the cracks.
+      </p>
+      <p className="text-gray-400 mb-10">
+        Bills, appointments, documents, deadlines — Mawin holds it all,
+        reminds you right on time, and clears the clutter from your head.
+      </p>
 
-      {error && <p style={{ color: 'red' }}>Error loading tasks: {error.message}</p>}
-
-      {hasReminders && (
-        <div style={{
-          background: '#2d2200',
-          border: '1px solid #997700',
-          borderRadius: '6px',
-          padding: '1rem',
-          marginBottom: '1.5rem',
-        }}>
-          <strong style={{ color: '#ffcc00' }}>🔔 Reminders</strong>
-          <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.2rem' }}>
-            {todayTasks.map((t) => (
-              <li key={`reminder-today-${t.id}`}>
-                <strong>{t.title}</strong> is due today ({t.category})
-              </li>
-            ))}
-            {earlyReminderTasks.map((t) => (
-              <li key={`reminder-early-${t.id}`}>
-                <strong>{t.title}</strong> is due {t.date} ({t.category})
-              </li>
-            ))}
-          </ul>
+      <div className="grid sm:grid-cols-3 gap-4 text-left mb-10">
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h3 className="font-semibold mb-1">📋 One place for everything</h3>
+          <p className="text-sm text-gray-400">
+            Bills, appointments, documents, work, and personal tasks — sorted into Today and Upcoming.
+          </p>
         </div>
-      )}
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h3 className="font-semibold mb-1">🔔 Reminders that show up</h3>
+          <p className="text-sm text-gray-400">
+            Every task reminds you on the day it&apos;s due — with an optional early heads-up, 2 or 3 days ahead.
+          </p>
+        </div>
+        <div className="bg-gray-900 border border-gray-800 rounded-lg p-4">
+          <h3 className="font-semibold mb-1">🔁 Handles the repeats</h3>
+          <p className="text-sm text-gray-400">
+            Monthly bills and weekly routines recreate themselves automatically once you&apos;re done.
+          </p>
+        </div>
+      </div>
 
-      <h2>Today</h2>
-      {todayTasks.length === 0 ? (
-        <p style={{ color: '#888' }}>Nothing due today.</p>
-      ) : (
-        <ul style={{ padding: 0 }}>
-          {todayTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
-        </ul>
-      )}
+      <div className="flex justify-center gap-4">
+        <Link
+          href="/signup"
+          className="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg font-medium transition-colors"
+        >
+          Get Started
+        </Link>
+        <Link
+          href="/login"
+          className="px-6 py-2.5 bg-gray-800 hover:bg-gray-700 rounded-lg font-medium transition-colors"
+        >
+          Log In
+        </Link>
+      </div>
 
-      <h2>Upcoming</h2>
-      {upcomingTasks.length === 0 ? (
-        <p style={{ color: '#888' }}>Nothing upcoming.</p>
-      ) : (
-        <ul style={{ padding: 0 }}>
-          {upcomingTasks.map((task) => (
-            <TaskItem key={task.id} task={task} />
-          ))}
-        </ul>
-      )}
-
-      <h2>Completed</h2>
-      {completedTasks.length === 0 ? (
-        <p style={{ color: '#888' }}>No completed tasks yet.</p>
-      ) : (
-        <ul style={{ padding: 0 }}>
-          {completedTasks.map((task) => (
-            <li key={task.id} style={{ marginBottom: '0.5rem', listStyle: 'none', color: '#888', textDecoration: 'line-through' }}>
-              {task.title} — {task.category} — {task.date}
-            </li>
-          ))}
-        </ul>
-      )}
+      <p className="text-xs text-gray-600 mt-12">Mawin — your life-admin assistant.</p>
     </div>
   )
 }

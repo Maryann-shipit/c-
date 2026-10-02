@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const CATEGORIES = ['Bills', 'Appointments', 'Documents', 'Work/School', 'Personal']
@@ -25,11 +26,7 @@ export default function EditTaskPage() {
   useEffect(() => {
     const loadTask = async () => {
       const supabase = createClient()
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('id', taskId)
-        .single()
+      const { data, error } = await supabase.from('tasks').select('*').eq('id', taskId).single()
 
       if (error || !data) {
         setError('Could not load task.')
@@ -71,111 +68,64 @@ export default function EditTaskPage() {
     if (updateError) {
       setError(updateError.message)
     } else {
-      router.push('/')
+      router.push('/dashboard')
       router.refresh()
     }
   }
 
+  const inputClass = "w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
+  const labelClass = "block text-sm mb-1 text-gray-400"
+
   if (fetching) {
-    return <div style={{ padding: '2rem' }}>Loading...</div>
+    return <div className="max-w-md mx-auto px-4 py-8 text-gray-400">Loading...</div>
   }
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '400px' }}>
-      <h1>Edit Task</h1>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Title *</label>
-          <br />
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem' }}
-          />
+    <div className="max-w-md mx-auto px-4 py-8">
+      <Link href="/dashboard" className="text-sm text-blue-400 hover:underline">← Back</Link>
+      <h1 className="text-2xl font-semibold mt-2 mb-6">Edit Task</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className={labelClass}>Title *</label>
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required className={inputClass} />
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Date *</label>
-          <br />
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            style={{ width: '100%', padding: '0.5rem' }}
-          />
+        <div>
+          <label className={labelClass}>Date *</label>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={inputClass} />
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Time (optional)</label>
-          <br />
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          />
+        <div>
+          <label className={labelClass}>Time (optional)</label>
+          <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Category *</label>
-          <br />
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          >
-            {CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
+        <div>
+          <label className={labelClass}>Category *</label>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputClass}>
+            {CATEGORIES.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
           </select>
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Notes (optional)</label>
-          <br />
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-            rows={3}
-          />
+        <div>
+          <label className={labelClass}>Notes (optional)</label>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className={inputClass} rows={3} />
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Early reminder (optional)</label>
-          <br />
-          <select
-            value={earlyReminder}
-            onChange={(e) => setEarlyReminder(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          >
+        <div>
+          <label className={labelClass}>Early reminder (optional)</label>
+          <select value={earlyReminder} onChange={(e) => setEarlyReminder(e.target.value)} className={inputClass}>
             <option value="">None (D-day only)</option>
             <option value="2_days">2 days before</option>
             <option value="3_days">3 days before</option>
           </select>
         </div>
-
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Recurrence (optional)</label>
-          <br />
-          <select
-            value={recurrence}
-            onChange={(e) => setRecurrence(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem' }}
-          >
+        <div>
+          <label className={labelClass}>Recurrence (optional)</label>
+          <select value={recurrence} onChange={(e) => setRecurrence(e.target.value)} className={inputClass}>
             <option value="none">None</option>
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
           </select>
         </div>
-
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem 1rem' }}>
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        <button type="submit" disabled={loading} className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg font-medium transition-colors">
           {loading ? 'Saving...' : 'Save Changes'}
         </button>
       </form>

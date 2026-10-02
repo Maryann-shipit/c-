@@ -34,7 +34,6 @@ export default function TaskItem({ task }: { task: Task }) {
 
   const handleComplete = async () => {
     const supabase = createClient()
-
     await supabase.from('tasks').update({ status: 'completed' }).eq('id', task.id)
 
     if (task.recurrence && task.recurrence !== 'none') {
@@ -62,18 +61,22 @@ export default function TaskItem({ task }: { task: Task }) {
   }
 
   return (
-    <li style={{ marginBottom: '0.75rem', listStyle: 'none' }}>
-      <strong>{task.title}</strong> — {task.category}
-      {task.time ? ` at ${task.time}` : ''}
-      {task.recurrence && task.recurrence !== 'none' ? ` (${task.recurrence})` : ''}
-      {' '}
-      <Link href={`/tasks/${task.id}/edit`} style={{ marginLeft: '0.5rem' }}>
+    <li className="flex flex-wrap items-center gap-2 bg-gray-900 border border-gray-800 rounded-lg px-3 py-2">
+      <span className="flex-1 min-w-[140px]">
+        <strong>{task.title}</strong>{' '}
+        <span className="text-gray-400 text-sm">
+          — {task.category}
+          {task.time ? ` at ${task.time}` : ''}
+          {task.recurrence && task.recurrence !== 'none' ? ` (${task.recurrence})` : ''}
+        </span>
+      </span>
+      <Link href={`/tasks/${task.id}/edit`} className="text-sm text-blue-400 hover:underline">
         Edit
       </Link>
-      <button onClick={handleComplete} style={{ marginLeft: '0.5rem', padding: '0.2rem 0.5rem' }}>
+      <button onClick={handleComplete} className="text-sm px-2 py-1 bg-green-700 hover:bg-green-600 rounded">
         Complete
       </button>
-      <button onClick={handleDelete} style={{ marginLeft: '0.5rem', padding: '0.2rem 0.5rem' }}>
+      <button onClick={handleDelete} className="text-sm px-2 py-1 bg-red-800 hover:bg-red-700 rounded">
         Delete
       </button>
     </li>

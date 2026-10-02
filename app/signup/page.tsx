@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 export default function SignupPage() {
@@ -10,7 +10,6 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const router = useRouter()
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -18,10 +17,7 @@ export default function SignupPage() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
+    const { error } = await supabase.auth.signUp({ email, password })
 
     setLoading(false)
 
@@ -34,45 +30,53 @@ export default function SignupPage() {
 
   if (success) {
     return (
-      <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
-        <h1>Check your email</h1>
-        <p>We sent you a confirmation link. Click it to activate your account, then log in.</p>
+      <div className="max-w-sm mx-auto px-4 py-16">
+        <h1 className="text-2xl font-semibold mb-4">Check your email</h1>
+        <p className="text-gray-400">
+          We sent you a confirmation link. Click it to activate your account, then log in.
+        </p>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '2rem', fontFamily: 'sans-serif', maxWidth: '400px' }}>
-      <h1>Sign Up</h1>
-      <form onSubmit={handleSignup}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Email</label>
-          <br />
+    <div className="max-w-sm mx-auto px-4 py-16">
+      <h1 className="text-2xl font-semibold mb-6">Sign Up</h1>
+      <form onSubmit={handleSignup} className="space-y-4">
+        <div>
+          <label className="block text-sm mb-1 text-gray-400">Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{ width: '100%', padding: '0.5rem' }}
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
           />
         </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label>Password</label>
-          <br />
+        <div>
+          <label className="block text-sm mb-1 text-gray-400">Password</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
-            style={{ width: '100%', padding: '0.5rem' }}
+            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
           />
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={loading} style={{ padding: '0.5rem 1rem' }}>
+        {error && <p className="text-red-400 text-sm">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg font-medium transition-colors"
+        >
           {loading ? 'Signing up...' : 'Sign Up'}
         </button>
       </form>
+      <p className="mt-4 text-sm text-gray-400">
+        Already have an account?{' '}
+        <Link href="/login" className="text-blue-400 hover:underline">Log in</Link>
+      </p>
     </div>
   )
 }
