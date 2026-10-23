@@ -1,82 +1,45 @@
-'use client'
+"use client";
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import PasswordInput from "@/components/PasswordInput";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+export default function SignUp() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
+  const router = useRouter();
 
-export default function SignupPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-
-    const supabase = createClient()
-    const { error } = await supabase.auth.signUp({ email, password })
-
-    setLoading(false)
-
-    if (error) {
-      setError(error.message)
-    } else {
-      setSuccess(true)
-    }
-  }
-
-  if (success) {
-    return (
-      <div className="max-w-sm mx-auto px-4 py-16">
-        <h1 className="text-2xl font-semibold mb-4">Check your email</h1>
-        <p className="text-gray-400">
-          We sent you a confirmation link. Click it to activate your account, then log in.
-        </p>
-      </div>
-    )
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(""); setMsg("");
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) return setError(error.message);
+    if (data.session) router.push("/dashboard");
+    else setMsg("Check your email to confirm your account.");
   }
 
   return (
-    <div className="max-w-sm mx-auto px-4 py-16">
-      <h1 className="text-2xl font-semibold mb-6">Sign Up</h1>
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <label className="block text-sm mb-1 text-gray-400">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm mb-1 text-gray-400">Password</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:outline-none focus:border-blue-500"
-          />
-        </div>
-        {error && <p className="text-red-400 text-sm">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg font-medium transition-colors"
-        >
-          {loading ? 'Signing up...' : 'Sign Up'}
-        </button>
+    <main className="mx-auto max-w-sm p-6 text-white">
+      <h1 className="mb-4 text-2xl font-semibold">Sign Up</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="email" required value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="w-full rounded-lg border border-gray-700 bg-gray-900 p-3"
+        />
+        <PasswordInput value={password} onChange={setPassword} />
+        {error && <p className="text-sm text-red-400">{error}</p>}
+        {msg && <p className="text-sm text-green-400">{msg}</p>}
+        <button className="w-full rounded-lg bg-blue-600 p-3">Sign Up</button>
       </form>
       <p className="mt-4 text-sm text-gray-400">
-        Already have an account?{' '}
-        <Link href="/login" className="text-blue-400 hover:underline">Log in</Link>
+        Already have an account? <Link href="/login" className="text-blue-400">Log in</Link>
       </p>
-    </div>
-  )
+    </main>
+  );
 }
